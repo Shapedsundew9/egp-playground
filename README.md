@@ -1,1 +1,1 @@
-# egp_playground
+# egp-playground
