@@ -14,14 +14,14 @@ one of:
 
 Whilst contrived this problem is a good test of the evolution algorithm with easy to understand results.
 """
-from typing import Callable
 from logging import DEBUG, Logger, NullHandler, getLogger
-from numpy import ndarray, real, int64, arange, sqrt, meshgrid, array
-from egp_population. population import population
 from random import randint, seed
-from tqdm import trange
-import matplotlib.pyplot as plt
+from typing import Callable
 
+import matplotlib.pyplot as plt
+from egp_population.population import population
+from numpy import arange, array, int64, meshgrid, ndarray, real, sqrt
+from tqdm import trange
 
 _logger: Logger = getLogger(__name__)
 _logger.addHandler(NullHandler())
@@ -35,7 +35,7 @@ Y = 5
 Z = 44
 
 
-def preload_function():
+def preload_function() -> None:
     """In this case we don't need to preload anything.
     Data is generated.
     """
