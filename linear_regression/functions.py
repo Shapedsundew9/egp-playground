@@ -81,9 +81,7 @@ def preload_function():
     """
 
 
-def generate_x(
-    scale: real, N: int, rng: Generator, narrow: bool = False
-) -> tuple[array]:
+def generate_x(scale: real, N: int, rng: Generator, narrow: bool = False) -> tuple[array]:
     """Generate the N x values for the linear regression model.
 
     -scale <= x <= scale

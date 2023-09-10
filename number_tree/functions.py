@@ -16,11 +16,12 @@ Whilst contrived this problem is a good test of the evolution algorithm with eas
 """
 from logging import DEBUG, Logger, NullHandler, getLogger
 from random import randint, seed
-from typing import Callable
+from typing import Callable, cast
 
 import matplotlib.pyplot as plt
 from egp_population.population import population
-from numpy import arange, array, int64, meshgrid, ndarray, real, sqrt
+from numpy import arange, array, int64, meshgrid, single, sqrt, bool_, full
+from numpy.typing import NDArray
 from tqdm import trange
 
 _logger: Logger = getLogger(__name__)
@@ -41,7 +42,7 @@ def preload_function() -> None:
     """
 
 
-def fitness_function(individual: Callable[[int, int], int]) -> real:
+def fitness_function(individual: Callable[[int, int], int]) -> single:
     """The fitness function is about the 'correctness' of the solution.
     See the survivability function for what constitutes the best solution.
 
@@ -49,15 +50,12 @@ def fitness_function(individual: Callable[[int, int], int]) -> real:
 
     For this problem the fitness is 1 - the square of the error in Z over Z**2.
     """
-    return max(1.0 - ((Z - individual(X, Y)) / Z) ** 2, 1.0)
+    return single(max(1.0 - ((Z - individual(X, Y)) / Z) ** 2, 1.0))
 
 
 def survivability_function(
     populous: population,
-) -> (
-    tuple[ndarray[real], ndarray[bool]]
-    | tuple[ndarray[int64], ndarray[real], ndarray[bool]]
-):
+) -> tuple[NDArray[single], NDArray[bool_]] | tuple[NDArray[int64], NDArray[single], NDArray[bool_]]:
     """The survivability function is used to determine which solutions continue to be evolved & which will be deleted.
     It is called after each epoch and has 2 ways to define the next epoch:
         1. Set 'active' to True for the individuals to continue to be evolved. Survivability is ignored.
@@ -82,15 +80,18 @@ def survivability_function(
 
     Returns
     -------
-    tuple[array[real], array[bool]] = (survivability, active) for the whole population
-    tuple[array[int64], array[real], array[bool]] = (ref, survivability, active) for a subset of the population
+    tuple[array[single], array[bool]] = (survivability, active) for the whole population
+    tuple[array[int64], array[single], array[bool]] = (ref, survivability, active) for a subset of the population
     """
+    survivability: NDArray[single] = cast(NDArray[single], populous['fitness'])
+    active: NDArray[bool_] = full(survivability.shape, False, dtype=bool_)
+    return (survivability, active)
 
 
-def random_solution(x: int, y: int, limit: int = 4 * Z) -> list[int]:
+def random_solution(x: int, y: int, limit: int = 4 * Z) -> tuple[list[int], list[int]]:
     """Generate a random solution to the problem."""
-    path = ([0], [0])
-    z = 0
+    path: tuple[list[int], list[int]] = ([0], [0])
+    z: int = 0
     while z != Z:
         path[0].append(path[0][-1])
         path[1].append(path[1][-1])
@@ -116,9 +117,7 @@ if __name__ == "__main__":
     seed(1)
     z_limit = 2 * Z
     boundary = int(2 * Z / min(X, Y)) + 1
-    x_space, y_space = meshgrid(
-        arange(-boundary, boundary + 1) * X, arange(-boundary, boundary + 1) * Y
-    )
+    x_space, y_space = meshgrid(arange(-boundary, boundary + 1) * X, arange(-boundary, boundary + 1) * Y)
     dz_space = sqrt(abs(x_space + y_space - Z))
 
     # Generate a random path to the solution
@@ -127,17 +126,11 @@ if __name__ == "__main__":
     # Plot the random path
     fig, ax = plt.subplots()
     fig.set_size_inches(12, 10)
-    c = ax.pcolormesh(
-        x_space, y_space, dz_space, cmap="RdBu", vmin=0, vmax=dz_space.max()
-    )
-    ax.set_title(
-        f"A Random Path to Solution. X={X}, Y={Y}, Z={Z}, length={len(random_path[0]) - 1}."
-    )
+    c = ax.pcolormesh(x_space, y_space, dz_space, cmap="RdBu", vmin=0, vmax=dz_space.max())
+    ax.set_title(f"A Random Path to Solution. X={X}, Y={Y}, Z={Z}, length={len(random_path[0]) - 1}.")
     ax.axis([x_space.min(), x_space.max(), y_space.min(), y_space.max()])
     fig.colorbar(c, ax=ax)
-    ax.plot(
-        random_path[0], random_path[1], linewidth=2, color="black", label="random path"
-    )
+    ax.plot(random_path[0], random_path[1], linewidth=2, color="black", label="random path")
     ax.plot([0], [0], marker="x", markersize=5, color="green", label="origin")
     ax.plot(
         random_path[0][-1],
@@ -150,16 +143,11 @@ if __name__ == "__main__":
     plt.savefig("random_path.png")
 
     # Generate a population of random solutions
-    path_lengths = [
-        len(random_solution(X, Y, z_limit)[0])
-        for _ in trange(10000, desc="Generating random paths")
-    ]
+    path_lengths: list[int] = [len(random_solution(X, Y, z_limit)[0]) for _ in trange(10000, desc="Generating random paths")]
     fig, ax = plt.subplots()
     fig.set_size_inches(12, 10)
     ax.hist(path_lengths, bins=range(0, max(path_lengths) + 10, 10), color="blue")
-    ax.set_title(
-        f"Random Path Length Distribution. X={X}, Y={Y}, Z={Z}. 10k samples, bin width = 10."
-    )
+    ax.set_title(f"Random Path Length Distribution. X={X}, Y={Y}, Z={Z}. 10k samples, bin width = 10.")
     ax.set_xlabel("Path length")
     ax.set_ylabel("Frequency")
     plt.savefig("random_path_distribution.png")

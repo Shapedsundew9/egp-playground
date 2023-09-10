@@ -1,0 +1,7 @@
+[tool.black]
+line-length = 140
+target-version = ['py311']
+
+[project.urls]
+"Homepage" = "https://github.com/Shapedsundew9/egp-playground"
+"Bug Tracker" = "https://github.com/Shapedsundew9/egp-playground/issues"
