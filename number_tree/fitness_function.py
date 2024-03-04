@@ -27,10 +27,10 @@ Z = 44
 
 # This structure is required by Erasmus
 EGP_PROBLEM_CONFIG: dict[str, Any] = {
-    "name": "Number Tree",                              # Optional but recommended
-    "description": __doc__,                             # Optional but recommended
-    "inputs": ["int", "int"],                           # Required
-    "outputs": ["int"],                                 # Required
+    "name": "Number Tree",  # Optional but recommended
+    "description": __doc__,  # Optional but recommended
+    "inputs": ["int", "int"],  # Required
+    "outputs": ["int"],  # Required
     "creator": "22c23596-df90-4b87-88a4-9409a0ea764f",  # Optional
 }
 
